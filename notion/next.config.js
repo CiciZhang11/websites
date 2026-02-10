@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    serverActions: true,
+  // Disable ESLint during build on platforms like Vercel where dev-time lint
+  // dependencies or configs may not be available.
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 

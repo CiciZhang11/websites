@@ -54,7 +54,7 @@ export const Block: React.FC<BlockProps> = ({
   onArrowDown,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const contentEditableRef = useRef<HTMLDivElement>(null);
+  const contentEditableRef = useRef<HTMLDivElement | null>(null);
   const [toggleCollapsed, setToggleCollapsed] = useState(
     metadata?.collapsed ?? false
   );
@@ -119,13 +119,31 @@ export const Block: React.FC<BlockProps> = ({
     } else if (e.key === "Backspace" && e.currentTarget.textContent === "") {
       e.preventDefault();
       onBackspace?.();
-    } else if (e.key === "ArrowUp" && e.currentTarget.selectionStart === 0) {
+    } else if (e.key === "ArrowUp" && (() => {
+      const el = e.currentTarget as HTMLDivElement;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return false;
+      const range = sel.getRangeAt(0).cloneRange();
+      const pre = document.createRange();
+      pre.selectNodeContents(el);
+      pre.setEnd(range.startContainer, range.startOffset);
+      return pre.toString().length === 0;
+    })()) {
       e.preventDefault();
       onArrowUp?.();
     } else if (
       e.key === "ArrowDown" &&
       e.currentTarget.textContent &&
-      e.currentTarget.selectionStart === e.currentTarget.textContent.length
+      (() => {
+        const el = e.currentTarget as HTMLDivElement;
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return false;
+        const range = sel.getRangeAt(0).cloneRange();
+        const pre = document.createRange();
+        pre.selectNodeContents(el);
+        pre.setEnd(range.startContainer, range.startOffset);
+        return pre.toString().length === (el.textContent || "").length;
+      })()
     ) {
       e.preventDefault();
       onArrowDown?.();

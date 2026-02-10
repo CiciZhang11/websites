@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  pages         Page[]
+  sessions      Session[]
+  accounts      Account[]
+  recentlyViewed RecentlyViewed[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Page {
+  id            String    @id @default(cuid())
+  title         String
+  icon          String?
+  emoji         String?
+  parentId      String?
+  parent        Page?     @relation("PageHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children      Page[]    @relation("PageHierarchy")
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blocks        Block[]
+  recentlyViewed RecentlyViewed[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  order         Int       @default(0)
+  isArchived    Boolean   @default(false)
+  isPublished   Boolean   @default(false)
+
+  @@index([userId])
+  @@index([parentId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  type      String   // paragraph, heading1, heading2, heading3, bullet, numbered, code, quote, toggle, table, divider, image, embed
+  content   String   // JSON string for rich content
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  order     Int      @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  metadata  String?  // JSON string for additional block metadata (e.g., language for code blocks, table structure)
+
+  @@index([pageId])
+  @@index([pageId, order])
+}
+
+model RecentlyViewed {
+  id        String   @id @default(cuid())
+  userId    String
+  pageId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  viewedAt  DateTime @default(now())
+
+  @@unique([userId, pageId])
+  @@index([userId, viewedAt])
+}

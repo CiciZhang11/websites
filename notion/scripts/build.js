@@ -8,10 +8,11 @@ function run(cmd, args) {
 console.log('Running: prisma generate');
 run('npx', ['prisma', 'generate']);
 
-if (process.env.VERCEL) {
-  console.log('VERCEL detected — skipping `prisma migrate deploy` during build.');
+// Only skip migrations if no DATABASE_URL (dev SQLite case)
+if (!process.env.DATABASE_URL) {
+  console.log('DATABASE_URL not set — skipping migrations.');
 } else {
-  console.log('Running: prisma migrate deploy');
+  console.log('DATABASE_URL found — running prisma migrate deploy');
   run('npx', ['prisma', 'migrate', 'deploy']);
 }
 

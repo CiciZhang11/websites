@@ -8,13 +8,8 @@ function run(cmd, args) {
 console.log('Running: prisma generate');
 run('npx', ['prisma', 'generate']);
 
-// Only skip migrations if no DATABASE_URL (dev SQLite case)
-if (!process.env.DATABASE_URL) {
-  console.log('DATABASE_URL not set — skipping migrations.');
-} else {
-  console.log('DATABASE_URL found — running prisma migrate deploy');
-  run('npx', ['prisma', 'migrate', 'deploy']);
-}
+// Skip migrations during build (will be done manually or separately)
+console.log('Skipping migrations during build.');
 
 console.log('Running: next build');
 run('npx', ['next', 'build']);

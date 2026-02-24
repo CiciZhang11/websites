@@ -45,7 +45,7 @@ This guide will help you set up and run the Notion Replica project.
 
 If you encounter database errors:
 
-1. Delete `dev.db` and `dev.db-journal` files
+1. Ensure PostgreSQL is running and DATABASE_URL is correct
 2. Run `npm run db:migrate` again
 3. Run `npm run db:seed` to populate data
 
